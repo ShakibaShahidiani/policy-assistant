@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Policy Assistant</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6f9; height: 100vh; display: flex; flex-direction: column; }
+
+    header { background: #1a3a5c; color: white; padding: 12px 24px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+    header h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; }
+    .conv-badge { background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-family: monospace; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-new { margin-left: auto; padding: 5px 12px; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 5px; cursor: pointer; font-size: 12px; }
+    .btn-new:hover { background: rgba(255,255,255,0.25); }
+
+    .main { display: flex; flex: 1; overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: 290px; background: white; border-right: 1px solid #e2e6ea; display: flex; flex-direction: column; flex-shrink: 0; }
+    .sidebar-section { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+    .sidebar-section h3 { font-size: 11px; text-transform: uppercase; color: #999; letter-spacing: 0.6px; margin-bottom: 10px; }
+
+    .upload-area { border: 2px dashed #d0d7de; border-radius: 8px; padding: 18px 12px; text-align: center; cursor: pointer; color: #999; font-size: 13px; line-height: 1.5; transition: all 0.15s; }
+    .upload-area:hover, .upload-area.drag { border-color: #1a3a5c; color: #1a3a5c; background: #f0f4f8; }
+    #file-input { display: none; }
+    #upload-status { margin-top: 6px; font-size: 12px; color: #1a3a5c; min-height: 16px; }
+
+    .doc-list { list-style: none; overflow-y: auto; flex: 1; padding: 8px 16px; }
+    .doc-item { padding: 7px 0; display: flex; align-items: center; gap: 7px; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+    .doc-item:last-child { border-bottom: none; }
+    .doc-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #333; }
+    .badge { padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+    .badge-active     { background: #d1fae5; color: #065f46; }
+    .badge-superseded { background: #fee2e2; color: #991b1b; }
+    .badge-temporary  { background: #fef3c7; color: #92400e; }
+    .badge-interim    { background: #fef3c7; color: #92400e; }
+    .no-docs { font-size: 13px; color: #bbb; padding: 8px 0; }
+
+    /* Chat area */
+    .chat { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+
+    .msg { display: flex; flex-direction: column; max-width: 78%; }
+    .msg-user { align-self: flex-end; align-items: flex-end; }
+    .msg-assistant { align-self: flex-start; align-items: flex-start; }
+
+    .bubble { padding: 11px 15px; border-radius: 14px; font-size: 14px; line-height: 1.65; white-space: pre-wrap; word-break: break-word; }
+    .msg-user .bubble { background: #1a3a5c; color: white; border-bottom-right-radius: 3px; }
+    .msg-assistant .bubble { background: white; color: #1a1a1a; border-bottom-left-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+    .citations-block { margin-top: 6px; font-size: 11.5px; color: #888; padding-left: 4px; }
+    .citations-block div { padding: 1px 0; }
+
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #bbb; font-size: 14px; }
+
+    .chat-bar { padding: 14px 20px; background: white; border-top: 1px solid #e2e6ea; display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0; }
+    #msg-input { flex: 1; padding: 10px 14px; border: 1px solid #d0d7de; border-radius: 8px; font-size: 14px; font-family: inherit; resize: none; height: 44px; max-height: 120px; line-height: 1.5; }
+    #msg-input:focus { outline: none; border-color: #1a3a5c; box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+    #send-btn { padding: 10px 20px; background: #1a3a5c; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; height: 44px; white-space: nowrap; }
+    #send-btn:hover:not(:disabled) { background: #254d7a; }
+    #send-btn:disabled { background: #c5cdd6; cursor: not-allowed; }
+
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #ccc; border-top-color: #1a3a5c; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .toast { position: fixed; bottom: 80px; right: 24px; background: #1a1a1a; color: white; padding: 9px 15px; border-radius: 6px; font-size: 13px; opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 999; }
+    .toast.show { opacity: 1; }
+
+    /* Evaluation modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: flex-start; justify-content: center; z-index: 1000; padding: 40px 20px; overflow-y: auto; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #f4f6f9; border-radius: 12px; width: 100%; max-width: 1020px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+    .modal-header { background: #1a3a5c; color: white; padding: 16px 24px; border-radius: 12px 12px 0 0; display: flex; align-items: center; }
+    .modal-header h2 { font-size: 18px; font-weight: 600; }
+    .modal-header .gen { margin-left: 16px; font-size: 11px; color: rgba(255,255,255,0.6); }
+    .modal-close { margin-left: auto; background: rgba(255,255,255,0.15); color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 15px; }
+    .modal-close:hover { background: rgba(255,255,255,0.28); }
+    .modal-body { padding: 24px; }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 18px; }
+    .metric-card { background: white; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .metric-card .label { font-size: 10.5px; text-transform: uppercase; color: #999; letter-spacing: 0.5px; }
+    .metric-card .value { font-size: 26px; font-weight: 700; color: #1a3a5c; margin-top: 4px; line-height: 1.1; }
+    .metric-card .sub { font-size: 11px; color: #999; margin-top: 3px; }
+    .metric-card.hero { background: #1a3a5c; }
+    .metric-card.hero .value, .metric-card.hero .label, .metric-card.hero .sub { color: white; }
+    .metric-card.hero .label { color: rgba(255,255,255,0.7); }
+    .metric-card.hero .sub { color: rgba(255,255,255,0.7); }
+    .metric-card.warn .value { color: #b45309; }
+
+    .eval-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); font-size: 13px; }
+    .eval-table th { background: #eef1f5; text-align: left; padding: 10px 12px; font-size: 10.5px; text-transform: uppercase; color: #777; letter-spacing: 0.4px; }
+    .eval-table td { padding: 10px 12px; border-top: 1px solid #f0f0f0; vertical-align: top; }
+    .eval-table tr.fail td { background: #fff7f7; }
+    .eval-table .case-id { font-weight: 600; color: #333; }
+    .eval-table .case-tests { font-size: 11px; color: #999; margin-top: 2px; }
+    .eval-table .reason { font-size: 11px; color: #b91c1c; margin-top: 3px; }
+    .eval-table .lim { font-size: 11px; color: #92400e; margin-top: 3px; }
+    .eval-table .num { text-align: center; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .res-pass { color: #065f46; font-weight: 700; }
+    .res-fail { color: #991b1b; font-weight: 700; }
+    .eval-loading, .eval-error { padding: 48px; text-align: center; color: #888; font-size: 14px; }
+    .eval-error { color: #991b1b; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Policy Assistant</h1>
+  <span class="conv-badge" id="conv-display" title="">No active conversation</span>
+  <button class="btn-new" onclick="newConversation()">+ New Conversation</button>
+  <button class="btn-new" onclick="openEval()">📊 Evaluation</button>
+</header>
+
+<div class="main">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <h3>Upload Policy Document</h3>
+      <div class="upload-area" id="upload-area"
+           onclick="document.getElementById('file-input').click()"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="handleDrop(event)">
+        <input type="file" id="file-input" accept=".pdf" onchange="uploadFile(this.files[0])">
+        <div>📄 Click or drag a PDF to upload</div>
+        <div id="upload-status"></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+      <h3>Documents <span id="doc-count" style="font-weight:400;color:#bbb">(0)</span></h3>
+      <ul class="doc-list" id="doc-list">
+        <li class="no-docs">No documents in this conversation</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Chat -->
+  <div class="chat">
+    <div class="messages" id="messages">
+      <div class="empty-state" id="empty-state">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.35">
+          <path d="M8 10h8M8 14h4m-8 6h12a2 2 0 002-2V6a2 2 0 00-2-2H8L4 8v10a2 2 0 002 2z"/>
+        </svg>
+        <span>Upload a document, then ask a question</span>
+      </div>
+    </div>
+
+    <div class="chat-bar">
+      <textarea id="msg-input" placeholder="Ask a question about your uploaded policies…"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
+        oninput="this.style.height='44px';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+      <button id="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Evaluation scorecard modal -->
+<div class="modal-overlay" id="eval-modal" onclick="if(event.target===this)closeEval()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Evaluation Scorecard</h2>
+      <span class="gen" id="eval-gen"></span>
+      <button class="modal-close" onclick="closeEval()">✕</button>
+    </div>
+    <div class="modal-body" id="eval-body">
+      <div class="eval-loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let convId = null;
+  let docs = [];
+
+  function newConversation() {
+    if (docs.length > 0 && !confirm('Start a new conversation? Current session will be cleared.')) return;
+    convId = null; docs = [];
+    document.getElementById('conv-display').textContent = 'No active conversation';
+    document.getElementById('conv-display').title = '';
+    document.getElementById('doc-list').innerHTML = '<li class="no-docs">No documents in this conversation</li>';
+    document.getElementById('doc-count').textContent = '(0)';
+    const msgs = document.getElementById('messages');
+    msgs.innerHTML = '';
+    const es = document.createElement('div'); es.className = 'empty-state'; es.id = 'empty-state';
+    es.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.35"><path d="M8 10h8M8 14h4m-8 6h12a2 2 0 002-2V6a2 2 0 00-2-2H8L4 8v10a2 2 0 002 2z"/></svg><span>Upload a document, then ask a question</span>';
+    msgs.appendChild(es);
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('upload-area').classList.remove('drag');
+    const f = e.dataTransfer.files[0];
+    if (f && f.name.toLowerCase().endsWith('.pdf')) uploadFile(f);
+    else toast('Only PDF files are accepted');
+  }
+
+  async function uploadFile(file) {
+    if (!file) return;
+    const statusEl = document.getElementById('upload-status');
+    statusEl.innerHTML = '<span class="spinner"></span> Uploading…';
+
+    const form = new FormData();
+    form.append('file', file);
+    if (convId) form.append('conversation_id', convId);
+
+    try {
+      const r = await fetch('/upload', { method: 'POST', body: form });
+      const d = await r.json();
+      if (!r.ok) { toast('Upload failed: ' + (d.detail || r.statusText)); statusEl.textContent = ''; return; }
+
+      convId = d.conversation_id;
+      const short = convId.length > 22 ? convId.slice(0, 22) + '…' : convId;
+      document.getElementById('conv-display').textContent = short;
+      document.getElementById('conv-display').title = convId;
+
+      if (d.superseded_filename) {
+        const idx = docs.findIndex(doc => doc.filename === d.superseded_filename);
+        if (idx !== -1) docs[idx].status = 'superseded';
+      }
+      docs.push(d);
+      renderDocs();
+      statusEl.textContent = '✓ ' + d.filename + ' (' + d.chunks_indexed + ' chunks, ' + d.status + ')';
+      setTimeout(() => { statusEl.textContent = ''; }, 3000);
+
+      const es = document.getElementById('empty-state');
+      if (es) es.remove();
+    } catch(e) { toast('Network error: ' + e.message); statusEl.textContent = ''; }
+
+    // reset input so same file can be re-uploaded
+    document.getElementById('file-input').value = '';
+  }
+
+  function renderDocs() {
+    document.getElementById('doc-count').textContent = '(' + docs.length + ')';
+    document.getElementById('doc-list').innerHTML = docs.map(d =>
+      `<li class="doc-item">
+        <span class="doc-name" title="${d.filename}">${d.filename}</span>
+        <span class="badge badge-${d.status}">${d.status}</span>
+      </li>`
+    ).join('');
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('msg-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    if (!convId) { toast('Upload a document first'); return; }
+
+    input.value = ''; input.style.height = '44px';
+    document.getElementById('send-btn').disabled = true;
+
+    appendMsg('user', msg);
+    const thinking = appendThinking();
+
+    try {
+      const r = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversation_id: convId, message: msg })
+      });
+      const d = await r.json();
+      thinking.remove();
+      if (!r.ok) { appendMsg('assistant', '⚠️ ' + (d.detail || r.statusText)); return; }
+      appendMsg('assistant', d.answer, d.citations);
+    } catch(e) {
+      thinking.remove();
+      appendMsg('assistant', '⚠️ Network error: ' + e.message);
+    } finally {
+      document.getElementById('send-btn').disabled = false;
+      document.getElementById('msg-input').focus();
+    }
+  }
+
+  function appendMsg(role, text, citations) {
+    const msgs = document.getElementById('messages');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg msg-' + role;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = text;
+    wrap.appendChild(bubble);
+
+    if (citations && citations.length) {
+      // deduplicate by index
+      const seen = new Set();
+      const uniq = citations.filter(c => { const k = c.index + '|' + c.filename; if(seen.has(k)) return false; seen.add(k); return true; });
+      const block = document.createElement('div');
+      block.className = 'citations-block';
+      uniq.forEach(c => {
+        const row = document.createElement('div');
+        row.textContent = '[' + c.index + '] ' + c.filename + ', p.' + c.page;
+        block.appendChild(row);
+      });
+      wrap.appendChild(block);
+    }
+
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+    return wrap;
+  }
+
+  function appendThinking() {
+    const msgs = document.getElementById('messages');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg msg-assistant';
+    wrap.innerHTML = '<div class="bubble"><span class="spinner"></span> Thinking…</div>';
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+    return wrap;
+  }
+
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ---- Evaluation scorecard ----
+  function closeEval() { document.getElementById('eval-modal').classList.remove('show'); }
+
+  async function openEval() {
+    const modal = document.getElementById('eval-modal');
+    const body = document.getElementById('eval-body');
+    document.getElementById('eval-gen').textContent = '';
+    body.innerHTML = '<div class="eval-loading">Loading evaluation results…</div>';
+    modal.classList.add('show');
+    try {
+      const r = await fetch('/eval');
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        body.innerHTML = '<div class="eval-error">' + (d.detail || ('Error ' + r.status)) + '</div>';
+        return;
+      }
+      renderEval(await r.json());
+    } catch (e) {
+      body.innerHTML = '<div class="eval-error">Failed to load results: ' + e.message + '</div>';
+    }
+  }
+
+  function evalCard(cls, label, value, sub) {
+    return '<div class="metric-card ' + cls + '">'
+         + '<div class="label">' + label + '</div>'
+         + '<div class="value">' + value + '</div>'
+         + '<div class="sub">' + sub + '</div></div>';
+  }
+
+  function failReasons(c) {
+    const r = [];
+    if (c.status_total && c.status_correct !== c.status_total) r.push('status ' + c.status_correct + '/' + c.status_total);
+    if (c.recall_total && c.recall !== 1) r.push('recall ' + c.recall_hits + '/' + c.recall_total);
+    if (c.req_total && c.facts !== 1) r.push('facts ' + c.req_hits + '/' + c.req_total);
+    if (c.forbidden_viol && c.forbidden_viol.length) r.push('forbidden ' + JSON.stringify(c.forbidden_viol));
+    if (!c.guardrail_ok) r.push('refusal expected=' + c.expect_refusal + ' got=' + c.refused);
+    if (c.faithfulness != null && c.faithfulness < 0.7) r.push('faithfulness ' + c.faithfulness.toFixed(2));
+    if (c.leaked && c.leaked.length) r.push('LEAKAGE ' + JSON.stringify(c.leaked));
+    return r.join(' · ');
+  }
+
+  function renderEval(data) {
+    const cases = data.cases || [];
+    const n = cases.length;
+    const passed = cases.filter(c => c.passed).length;
+
+    let sc = 0, st = 0, reqH = 0, reqT = 0, leak = 0, refExp = 0, refOk = 0;
+    const recVals = [], faithVals = [];
+    cases.forEach(c => {
+      sc += c.status_correct || 0; st += c.status_total || 0;
+      reqH += c.req_hits || 0; reqT += c.req_total || 0;
+      leak += (c.leaked ? c.leaked.length : 0);
+      if (c.recall_total) recVals.push(c.recall);
+      if (c.faithfulness != null) faithVals.push(c.faithfulness);
+      if (c.expect_refusal) { refExp++; if (c.guardrail_ok) refOk++; }
+    });
+    const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+    const recAvg = avg(recVals), faithAvg = avg(faithVals);
+    const pct = x => Math.round(x * 100) + '%';
+
+    if (data.generated_at) {
+      document.getElementById('eval-gen').textContent = 'generated ' + new Date(data.generated_at).toLocaleString();
+    }
+
+    let html = '<div class="metric-grid">';
+    html += evalCard('hero', 'Cases Passed', passed + '/' + n, pct(passed / n));
+    html += evalCard('', '1 · Status Resolution', sc + '/' + st, st ? pct(sc / st) : '—');
+    html += evalCard('', '2 · Retrieval Recall', recAvg != null ? pct(recAvg) : '—', 'avg across cases');
+    html += evalCard('', '3 · Fact Coverage', reqH + '/' + reqT, 'required facts found');
+    html += evalCard('', '4 · Faithfulness', faithAvg != null ? faithAvg.toFixed(2) : '—', 'LLM judge, avg');
+    html += evalCard('', '5 · Guardrails', refOk + '/' + refExp, 'correct refusals');
+    html += evalCard(leak ? 'warn' : '', 'Invariant · Leakage', leak, 'stale chunks retrieved');
+    html += '</div>';
+
+    html += '<table class="eval-table"><thead><tr>'
+          + '<th>Case</th><th class="num">Status</th><th class="num">Recall</th>'
+          + '<th class="num">Facts</th><th class="num">Refuse</th><th class="num">Faith</th><th class="num">Result</th>'
+          + '</tr></thead><tbody>';
+    cases.forEach(c => {
+      const status = c.status_total ? (c.status_correct + '/' + c.status_total) : '—';
+      const recall = c.recall_total ? (c.recall_hits + '/' + c.recall_total) : '—';
+      const facts = c.req_total ? (c.req_hits + '/' + c.req_total) : '—';
+      const refuse = c.guardrail_ok ? '✓' : '✗';
+      const faith = (c.faithfulness != null) ? c.faithfulness.toFixed(2) : '—';
+      let cell = '<div class="case-id">' + c.id + '</div>'
+               + '<div class="case-tests">' + (c.what_it_tests || '') + '</div>';
+      if (!c.passed) { const rs = failReasons(c); if (rs) cell += '<div class="reason">' + rs + '</div>'; }
+      if (c.limitation) cell += '<div class="lim">known limitation under test</div>';
+      html += '<tr class="' + (c.passed ? '' : 'fail') + '">'
+            + '<td>' + cell + '</td>'
+            + '<td class="num">' + status + '</td>'
+            + '<td class="num">' + recall + '</td>'
+            + '<td class="num">' + facts + '</td>'
+            + '<td class="num">' + refuse + '</td>'
+            + '<td class="num">' + faith + '</td>'
+            + '<td class="num ' + (c.passed ? 'res-pass' : 'res-fail') + '">' + (c.passed ? 'PASS' : 'FAIL') + '</td>'
+            + '</tr>';
+    });
+    html += '</tbody></table>';
+
+    document.getElementById('eval-body').innerHTML = html;
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEval(); });
+</script>
+</body>
+</html>
