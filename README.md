@@ -114,7 +114,7 @@ one chat session's documents isolated from another's.
 ## Running it
 
 ```bash
-git clone <this-repo-url>
+git clone https://github.com/ShakibaShahidiani/policy-assistant.git
 cd policy-assistant
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
