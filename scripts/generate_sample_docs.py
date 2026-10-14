@@ -1,10 +1,10 @@
 """
 Generates the synthetic sample policy PDFs used by this repo's demo and eval suite.
 
-These are entirely fictional documents for a fictional company ("Meridian Financial
-Group") written to exercise the version-resolution logic (superseded versions,
-self-described interim/temporary guidance, multi-policy questions). No real company
-policy content is used anywhere in this repo.
+These are entirely fictional, generic policy documents (no company name, real or
+invented) written to exercise the version-resolution logic (superseded versions,
+self-described interim/temporary guidance, multi-policy questions). No real
+company policy content is used anywhere in this repo.
 
 Run from the project root:
 
@@ -18,16 +18,12 @@ import fitz
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(ROOT, "pdfs")
 
-COMPANY = "Meridian Financial Group"
-
 
 def make_pdf(filename: str, title: str, meta_lines: list[str], body: str):
     doc = fitz.open()
     page = doc.new_page()
     y = 50
 
-    page.insert_text((50, y), COMPANY, fontsize=11, fontname="helv")
-    y += 20
     page.insert_text((50, y), title, fontsize=16, fontname="helv")
     y += 28
 
@@ -57,8 +53,8 @@ def main():
         "Travel & Expense Policy",
         ["Policy ID: FIN-TE-001", "Version: 4.0", "Effective Date: 1 January 2025"],
         "1. Purpose\n"
-        "This policy governs reimbursement of business travel and expense claims "
-        f"for {COMPANY} employees.\n\n"
+        "This policy governs reimbursement of business travel and expense "
+        "claims for employees.\n\n"
         "2. Lodging\n"
         "2.1 The standard nightly lodging limit is USD 185.\n"
         "2.2 For designated high-cost cities (Tokyo, Singapore, Hong Kong, Zurich), "
@@ -78,7 +74,7 @@ def main():
         "Travel & Expense Policy",
         ["Policy ID: FIN-TE-001", "Version: 2.1", "Effective Date: 1 June 2022"],
         "1. Purpose\n"
-        f"This policy governs reimbursement of business travel for {COMPANY} "
+        "This policy governs reimbursement of business travel for "
         "employees.\n\n"
         "2. Lodging\n"
         "2.1 The standard nightly lodging limit is USD 160.\n\n"
@@ -104,8 +100,8 @@ def main():
         "Information Security Policy",
         ["Policy ID: IT-SEC-004", "Version: 5.0", "Effective Date: 1 November 2024"],
         "1. Purpose\n"
-        f"This policy sets data classification and handling requirements for "
-        f"{COMPANY}.\n\n"
+        "This policy sets data classification and handling requirements for "
+        "employees.\n\n"
         "2. Data Classification\n"
         "2.1 Restricted data may not be stored on local drives or removable "
         "media.\n"
@@ -132,7 +128,7 @@ def main():
         "Workplace & Flexible Work Policy",
         ["Policy ID: HR-WRK-012", "Version: 3.5", "Effective Date: 1 March 2025"],
         "1. Purpose\n"
-        f"This policy sets equipment and workplace standards for {COMPANY} "
+        "This policy sets equipment and workplace standards for "
         "employees.\n\n"
         "2. Equipment\n"
         "2.1 Personal computers are prohibited for company work. Only "
@@ -145,7 +141,7 @@ def main():
         "Vendor & Procurement Policy",
         ["Policy ID: OPS-PROC-007", "Version: 2.0", "Effective Date: 1 February 2025"],
         "1. Purpose\n"
-        f"This policy governs vendor engagement for {COMPANY} employees.\n\n"
+        "This policy governs vendor engagement for employees.\n\n"
         "2. Vendor Engagement\n"
         "2.1 Employees attending vendor-hosted events (meals, hospitality) "
         "must ensure the event complies with both the Travel & Expense Policy "
@@ -157,7 +153,7 @@ def main():
         "Code of Business Conduct",
         ["Policy ID: LEG-ETH-001", "Version: 4.0", "Effective Date: 1 January 2025"],
         "1. Purpose\n"
-        f"This Code sets ethical standards for {COMPANY} employees.\n\n"
+        "This Code sets ethical standards for employees.\n\n"
         "2. Gifts and Hospitality\n"
         "2.1 Gifts or hospitality from vendors or business partners valued "
         "over USD 120 must be disclosed to Compliance.\n"

@@ -1,10 +1,9 @@
 # Policy Assistant
 
 A minimal Python REST API demonstrating Retrieval-Augmented Generation (RAG) over
-company policy PDFs — built as a case-study prototype for a fictional EU
-financial-services firm ("Meridian Financial Group") with a large, frequently
-revised policy library. Two endpoints: `POST /upload` (ingest a PDF) and
-`POST /chat` (answer a question with citations).
+company policy PDFs — built as a case-study prototype for an organization with a
+large, frequently revised internal policy library. Two endpoints:
+`POST /upload` (ingest a PDF) and `POST /chat` (answer a question with citations).
 
 **The hard part here isn't retrieval — it's version resolution.** Any company
 with a mature policy library ends up with superseded versions, interim memos,

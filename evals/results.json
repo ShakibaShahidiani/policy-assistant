@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-14T12:21:35.187162+00:00",
+  "generated_at": "2026-10-14T12:29:03.370159+00:00",
   "cases": [
     {
       "id": "trap1_lodging_limit",
@@ -20,9 +20,9 @@
       "guardrail_ok": true,
       "faithfulness": 1.0,
       "correctness": 1.0,
-      "judge_notes": "The answer accurately reflects the lodging limits provided in the context and is consistent with the reference.",
+      "judge_notes": "The answer accurately reflects the context and matches the key facts from the reference.",
       "leaked": [],
-      "answer": "The standard nightly lodging limit for the Asia-Pacific region, specifically for designated high-cost cities such as Tokyo and Singapore, is USD 240, provided there is pre-trip Finance approval. In other areas outside of these designated cities, the standard nightly lodging limit is USD 185 [1]. \n\nIn summary, for high-cost cities in Asia-Pacific, the limit is USD 240 with approval, while the standard limit for other areas is USD 185. \n\nFooter:  \n[n] reimbursement_2025.pdf, p.1",
+      "answer": "The lodging limit for designated high-cost cities in the Asia-Pacific region, specifically Tokyo and Singapore, is USD 240 per night, provided that there is pre-trip Finance approval. For other locations in the Asia-Pacific region, the standard nightly lodging limit is USD 185 per night [1]. \n\nSummary:\n- Standard lodging limit: USD 185.\n- High-cost cities (Tokyo, Singapore): USD 240 with Finance approval.\n\nFooter:\n[1] reimbursement_2025.pdf, p.1",
       "passed": true
     },
     {
@@ -44,9 +44,9 @@
       "guardrail_ok": true,
       "faithfulness": 1.0,
       "correctness": 1.0,
-      "judge_notes": "The answer accurately reflects the context and aligns with the reference.",
+      "judge_notes": "The answer accurately reflects the information in the context and aligns with the reference.",
       "leaked": [],
-      "answer": "Expense claims for travel reimbursement must be submitted within 21 days of trip completion via the Expense Portal. Claims submitted after this window will be denied [1]. \n\nSources:\n[1] reimbursement_2025.pdf, p.1",
+      "answer": "The deadline to submit travel expenses for reimbursement is within 21 days of trip completion via the Expense Portal. Claims submitted after this 21-day window will be denied [1]. \n\nFooter:\n[1] reimbursement_2025.pdf, p.1\n[2] reimbursement_2025.pdf, p.1",
       "passed": true
     },
     {
@@ -67,8 +67,8 @@
       "refused": false,
       "guardrail_ok": true,
       "faithfulness": 1.0,
-      "correctness": 0.9,
-      "judge_notes": "The answer is factually grounded in the context but lacks mention of the interim guidance that has been revoked.",
+      "correctness": 0.8,
+      "judge_notes": "The ANSWER accurately reflects the prohibition on storing restricted data on local and removable drives, but it fails to mention the context about outdated guidance on USB storage, which is present in the REFERENCE.",
       "leaked": [],
       "answer": "No, you may not store restricted company data on a USB drive or local hard drive. According to the policy, restricted data may not be stored on local drives or removable media [1]. \n\nFooter:\n[1] information_security_data.pdf, p.1",
       "passed": true
@@ -92,9 +92,9 @@
       "guardrail_ok": true,
       "faithfulness": 1.0,
       "correctness": 0.8,
-      "judge_notes": "The answer correctly conveys the prohibition of using personal laptops, but it does not mention the outdated temporary home-office allowance mentioned in the reference.",
+      "judge_notes": "The answer misses the detail about the 2021 temporary home-office allowance being discontinued, which is a key fact in the reference.",
       "leaked": [],
-      "answer": "No, you cannot use your personal laptop for work. Only IT-approved and IT-managed devices may be used for company work, and personal computers are prohibited unless explicit written approval has been granted by IT [1]. \n\nFooter:\n[1] workplace_policy.pdf, p.1",
+      "answer": "No, you cannot use your personal laptop for work. Personal computers are prohibited for company work, and only IT-approved and IT-managed devices may be used, except where IT has granted explicit written approval [1]. \n\nIf you need to use a device for work purposes, you'll need to obtain the appropriate IT-approved equipment. \n\nFooter:\n[1] workplace_policy.pdf, p.1",
       "passed": true
     },
     {
@@ -116,9 +116,9 @@
       "guardrail_ok": true,
       "faithfulness": 1.0,
       "correctness": 0.8,
-      "judge_notes": "The answer accurately addresses the need for disclosure but omits the important detail of the $50 meal reimbursement cap, which is a key aspect from the reference.",
+      "judge_notes": "The answer accurately mentions the need for disclosure of the $150 dinner but fails to note the $50 reimbursement cap, which is a key fact in the reference.",
       "leaked": [],
-      "answer": "You must consider the following points regarding accepting hospitality from a vendor:\n\n1. The value of the dinner is over USD 120, which requires disclosure to Compliance according to the Code of Business Conduct [2].\n2. However, since the value is below USD 300, it is not outright prohibited but still needs to be reported [2].\n3. Additionally, any vendor-hosted events must comply with both the Travel & Expense Policy and the Code of Business Conduct, which means you should ensure the dinner falls within other related guidelines [1].\n\nIn summary, while you can accept the $150 dinner from the vendor, you must disclose it to Compliance before accepting. \n\nCitations:\n[1] vendor_procurement_policy.pdf, p.1  \n[2] Code of Business Conduct.pdf, p.1  ",
+      "answer": "You may attend the dinner, but there are specific conditions to consider:\n\n1. The dinner as a gift from the vendor, valued at USD 150, must be disclosed to Compliance since it exceeds the USD 120 threshold for gifts or hospitality under the Code of Business Conduct [2].\n2. Additionally, you must ensure that attending the event complies with both the Travel & Expense Policy and the Code of Business Conduct, as outlined in the Vendor Procurement Policy [1].\n\nOverall, while you can accept the dinner, you are required to disclose it and confirm compliance with the relevant policies. \n\nSources:\n  [1] vendor_procurement_policy.pdf, p.1\n  [2] Code of Business Conduct.pdf, p.1",
       "passed": true
     },
     {
@@ -212,9 +212,9 @@
       "guardrail_ok": true,
       "faithfulness": 1.0,
       "correctness": 1.0,
-      "judge_notes": "The answer correctly conveys the nightly limit and the requirement for Finance approval, aligning with both the context and the reference.",
+      "judge_notes": "The answer accurately reflects the information in the context and matches the key facts in the reference.",
       "leaked": [],
-      "answer": "The nightly hotel limit when staying in Tokyo is USD 240, but this is subject to pre-trip Finance approval [1]. \n\nFooter:\n[1] reimbursement_2025.pdf, p.1",
+      "answer": "The nightly hotel limit when staying in Tokyo is USD 240, which applies to designated high-cost cities and is subject to pre-trip Finance approval [1]. \n\nFooter:\n  [1] reimbursement_2025.pdf, p.1",
       "passed": true
     }
   ]
